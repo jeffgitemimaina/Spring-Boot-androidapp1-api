@@ -28,6 +28,14 @@ class UserService @Autowired constructor(
         }
     }
 
+    fun getUser(firstName: String): List<User> {
+        val foundUsers = userRepository.findUserByName(firstName)
+        if (foundUsers.isEmpty()) {
+            throw UserNotFound("No users found with the specified name.")
+        }
+        return foundUsers
+    }
+
 
 
 }
