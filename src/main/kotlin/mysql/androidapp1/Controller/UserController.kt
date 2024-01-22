@@ -4,6 +4,7 @@ import mysql.androidapp1.Entities.User
 import mysql.androidapp1.Exceptions.UserNotFound
 import mysql.androidapp1.Service.UserService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.repository.query.Param
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -20,6 +21,36 @@ class UserController @Autowired constructor(
         return ResponseEntity(createdUser, HttpStatus.CREATED)
     }
 
+    @GetMapping("getActive-users")
+    fun getActiveUsers(@PathVariable status :Boolean):Any{
+        try{
+            userService.getActiveUsers(status)
+            return ResponseEntity.ok(status)
+        }
+        catch(ex:UserNotFound) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+
+        }
+
+    }
+
+
+    @GetMapping("get-user")
+    fun getUserByName(
+        @PathVariable firstName: String
+
+    ): Any {
+        try {
+            val foundUser = userService.getUser(firstName)
+            return ResponseEntity.ok(foundUser)
+        } catch (ex: UserNotFound) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        }
+    }
+
+
+
+
     @PutMapping("/{userId}")
     fun updateUser(
             @PathVariable userId: Long,
@@ -29,7 +60,7 @@ class UserController @Autowired constructor(
         return if (updatedUser != null) {
             ResponseEntity(updatedUser, HttpStatus.OK)
         } else {
-          throw UserNotFound("ngui iyo ndiriho ")
+          throw UserNotFound("no user found ")
         }
     }
 }

@@ -14,18 +14,43 @@ class UserService @Autowired constructor(
     fun createUser(user: User): User {
         return userRepository.save(user)
     }
+fun getAllUsers(id : Long): List<User>{
+    if (userRepository.existsById(id)){
+        return userRepository.getAllUsers(id)
+    }else{
+        throw UserNotFound("create users non exists by this")
+    }
+}
+    fun getActiveUsers(status: Boolean): List<User> {
+        val activeUsers = userRepository.getUserByStatus(status)
+
+        if (activeUsers.isNotEmpty()) {
+            return activeUsers
+        } else {
+            // Handle the case where no active users were found (e.g., return an empty list or throw an exception)
+            return emptyList()
+        }
+    }
 
 
 
-    fun updateUser(userId: Long, newUser: User): User? {
-        if (userRepository.existsById(userId)) {
-            newUser.id = userId  // Set the ID of the new user
+    fun updateUser(id: Long, newUser: User): User? {
+        if (userRepository.existsById(id)) {
+            newUser.id = id  // Set the ID of the new user
             return userRepository.save(newUser)
         } else {
             throw UserNotFound("user doesnt exist")
             // Handle the case when the user with the given ID doesn't exist
             return null
         }
+    }
+
+    fun getUser(firstName: String): List<User> {
+        val foundUsers = userRepository.findUserByName(firstName)
+        if (foundUsers.isEmpty()) {
+            throw UserNotFound("No users found with the specified name.")
+        }
+        return foundUsers
     }
 
 
