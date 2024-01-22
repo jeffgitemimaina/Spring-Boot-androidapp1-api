@@ -21,6 +21,19 @@ class UserController @Autowired constructor(
         return ResponseEntity(createdUser, HttpStatus.CREATED)
     }
 
+    @GetMapping("getActive-users")
+    fun getActiveUsers(@PathVariable status :Boolean):Any{
+        try{
+            userService.getActiveUsers(status)
+            return ResponseEntity.ok(status)
+        }
+        catch(ex:UserNotFound) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+
+        }
+
+    }
+
 
     @GetMapping("get-user")
     fun getUserByName(
@@ -34,6 +47,8 @@ class UserController @Autowired constructor(
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
         }
     }
+
+
 
 
     @PutMapping("/{userId}")

@@ -18,7 +18,10 @@ data class User(
    //     @Lob
     //    val imageData: ByteArray? = null,
         @Column
-        val passWord: String
+        val passWord: String,
+
+        @Column
+        val status : Boolean
 
 )
 
