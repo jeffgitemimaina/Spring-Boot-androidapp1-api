@@ -10,17 +10,18 @@ data class User(
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         var id: Long = 0,
 
-        @Column
+        @Column(name = "first_name")
         val firstName: String,
-        @Column
+
+        @Column(name = "second_name")
         val secondName: String,
        // @Column
    //     @Lob
     //    val imageData: ByteArray? = null,
-        @Column
+        @Column(name = "pass_word")
         val passWord: String,
 
-        @Column
+        @Column(name = "status")
         val status : Boolean
 
 )

@@ -4,7 +4,8 @@ import mysql.androidapp1.Entities.User
 import mysql.androidapp1.Exceptions.UserNotFound
 import mysql.androidapp1.Service.UserService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.repository.query.Param
+import org.springframework.boot.actuate.autoconfigure.info.InfoContributorAutoConfiguration
+import org.springframework.boot.actuate.autoconfigure.logging.LoggersEndpointAutoConfiguration
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/users")
 class UserController @Autowired constructor(
-        private val userService: UserService
+    private val userService: UserService
 ) {
 
     @PostMapping
@@ -21,11 +22,11 @@ class UserController @Autowired constructor(
         return ResponseEntity(createdUser, HttpStatus.CREATED)
     }
 
-    @GetMapping("getActive-users")
-    fun getActiveUsers(@PathVariable status :Boolean):Any{
+    @GetMapping("/getActive-users")
+    fun getActiveUsers(@RequestParam (required = false, defaultValue = "true")  status :Boolean):Any{
         try{
-            userService.getActiveUsers(status)
-            return ResponseEntity.ok(status)
+            val activeUsers = userService.getActiveUsers(true)
+            return ResponseEntity.ok(activeUsers)
         }
         catch(ex:UserNotFound) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -35,15 +36,21 @@ class UserController @Autowired constructor(
     }
 
 
-    @GetMapping("get-user")
-    fun getUserByName(
-        @PathVariable firstName: String
-
-    ): Any {
+    @GetMapping("/get-user")
+    fun getUserByName(@RequestParam firstName: String): Any {
         try {
             val foundUser = userService.getUser(firstName)
             return ResponseEntity.ok(foundUser)
         } catch (ex: UserNotFound) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        }
+    }
+    @GetMapping("/getAllUsers")
+    fun getAllUsers():Any{
+        try {
+            val presentusers = userService.getAllUsers()
+            return ResponseEntity.ok(presentusers)
+        }catch (ex:UserNotFound){
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
         }
     }
