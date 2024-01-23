@@ -9,13 +9,14 @@ import org.springframework.data.repository.query.Param
 interface UserRepository : JpaRepository<User, Long>{
 
 
-    @Query(value = "SELECT * FROM Users WHERE firstName = :firstName ", nativeQuery = true)
+    @Query(value = "SELECT * FROM Users WHERE first_name = :firstName ", nativeQuery = true)
     fun findUserByName(@Param("firstName") firstName: String): List<User>
 
-    @Query(value = "SELECT * FROM User ", nativeQuery = true)
-    fun  getAllUsers(@Param("id") id :Long ):List<User>
-
-    @Query(value = "SELECT * FROM User WHERE status = true ", nativeQuery = true)
-    fun getUserByStatus(@Param ("status") status:Boolean):List<User>
+    @Query(value = "SELECT * FROM users", nativeQuery = true)
+    fun getAllUsers(): List<User>
+    @Query(value = "SELECT * FROM users WHERE status = :status", nativeQuery = true)
+    fun getUserByStatus(status: Boolean): List<User>
+    //alternatively you can use the springboot function below
+    //fun getUserByStatus(status: Boolean): List<User>
 
 }

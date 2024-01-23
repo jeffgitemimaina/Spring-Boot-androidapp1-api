@@ -14,12 +14,9 @@ class UserService @Autowired constructor(
     fun createUser(user: User): User {
         return userRepository.save(user)
     }
-fun getAllUsers(id : Long): List<User>{
-    if (userRepository.existsById(id)){
-        return userRepository.getAllUsers(id)
-    }else{
-        throw UserNotFound("create users non exists by this")
-    }
+fun getAllUsers(): List<User>{
+        return userRepository.getAllUsers()
+
 }
     fun getActiveUsers(status: Boolean): List<User> {
         val activeUsers = userRepository.getUserByStatus(status)
