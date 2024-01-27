@@ -56,8 +56,15 @@ class UserController @Autowired constructor(
     }
 
 
-
-
+    @GetMapping("/profile/{id}")
+    fun getProfileImage(@PathVariable id: Long): Any {
+        val profileImage = userService.addProfile(id)
+        return if (profileImage != null) {
+          return profileImage
+        } else {
+            ResponseEntity.status(HttpStatus.NOT_FOUND).body(null)
+        }
+    }
     @PutMapping("/{userId}")
     fun updateUser(
             @PathVariable userId: Long,
