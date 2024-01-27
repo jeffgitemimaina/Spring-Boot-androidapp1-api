@@ -49,6 +49,15 @@ fun getAllUsers(): List<User>{
         }
         return foundUsers
     }
+    fun addProfile(id: Long): UserNotFound {
+        val profile= userRepository.getProfileById(id)
+        if (profile != null) {
+                throw UserNotFound("no user has the id ")
+            }
+        return UserNotFound("no user goes by that name")
+    }
+
+
 
 
 

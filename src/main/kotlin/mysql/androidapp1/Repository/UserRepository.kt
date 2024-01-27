@@ -1,6 +1,7 @@
 package mysql.androidapp1.Repository
 
 
+import com.sun.jdi.Value
 import mysql.androidapp1.Entities.User
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -16,6 +17,8 @@ interface UserRepository : JpaRepository<User, Long>{
     fun getAllUsers(): List<User>
     @Query(value = "SELECT * FROM users WHERE status = :status", nativeQuery = true)
     fun getUserByStatus(status: Boolean): List<User>
+    @Query(value= "SELECT * FROM users WHERE image", nativeQuery = true)
+    fun getProfileById(@Param("id") id :Long): ByteArray?
     //alternatively you can use the springboot function below
     //fun getUserByStatus(status: Boolean): List<User>
 
