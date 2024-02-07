@@ -1,11 +1,7 @@
 package mysql.androidapp1.Controller
-
-import mysql.androidapp1.Entities.User
-import mysql.androidapp1.Exceptions.UserNotFound
 import mysql.androidapp1.Service.UserService
+import mysql.androidapp1.Entities.User
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.actuate.autoconfigure.info.InfoContributorAutoConfiguration
-import org.springframework.boot.actuate.autoconfigure.logging.LoggersEndpointAutoConfiguration
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -22,59 +18,37 @@ class UserController @Autowired constructor(
         return ResponseEntity(createdUser, HttpStatus.CREATED)
     }
 
-    @GetMapping("/getActive-users")
-    fun getActiveUsers(@RequestParam (required = false, defaultValue = "true")  status :Boolean):Any{
-        try{
-            val activeUsers = userService.getActiveUsers(true)
-            return ResponseEntity.ok(activeUsers)
-        }
-        catch(ex:UserNotFound) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-
-        }
-
+    @PostMapping("/auth")
+    fun authenticateUser(@RequestBody authRequest: AuthenticationRequest): ResponseEntity<Boolean> {
+        val isAuthenticated = userService.authenticate(authRequest.email, authRequest.password)
+        return ResponseEntity.ok(isAuthenticated)
     }
 
 
-    @GetMapping("/get-user")
-    fun getUserByName(@RequestParam firstName: String): Any {
-        try {
-            val foundUser = userService.getUser(firstName)
-            return ResponseEntity.ok(foundUser)
-        } catch (ex: UserNotFound) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        }
-    }
-    @GetMapping("/getAllUsers")
-    fun getAllUsers():Any{
-        try {
-            val presentusers = userService.getAllUsers()
-            return ResponseEntity.ok(presentusers)
-        }catch (ex:UserNotFound){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        }
+
+    @PutMapping("/{id}")
+    fun updateUser(@PathVariable id: Long, @RequestBody updatedUser: User): ResponseEntity<User> {
+        val updatedUserResponse = userService.updateUser(id, updatedUser)
+        return ResponseEntity.ok(updatedUserResponse)
     }
 
-
-    @GetMapping("/profile/{id}")
-    fun getProfileImage(@PathVariable id: Long): Any {
-        val profileImage = userService.addProfile(id)
-        return if (profileImage != null) {
-          return profileImage
-        } else {
-            ResponseEntity.status(HttpStatus.NOT_FOUND).body(null)
-        }
+    @DeleteMapping("/{id}")
+    fun deleteUser(@PathVariable id: Long): ResponseEntity<Unit> {
+        userService.deleteUser(id)
+        return ResponseEntity.noContent().build()
     }
-    @PutMapping("/{userId}")
-    fun updateUser(
-            @PathVariable userId: Long,
-            @RequestBody newUser: User
-    ): ResponseEntity<User> {
-        val updatedUser = userService.updateUser(userId, newUser)
-        return if (updatedUser != null) {
-            ResponseEntity(updatedUser, HttpStatus.OK)
-        } else {
-          throw UserNotFound("no user found ")
-        }
+
+    @GetMapping("/email/{email}")
+    fun getUserByEmail(@PathVariable email: String): ResponseEntity<User> {
+        val user = userService.getUserByEmail(email)
+        return ResponseEntity.ok(user)
+    }
+
+    @GetMapping("/phone/{phoneNumber}")
+    fun getUserByPhoneNumber(@PathVariable phoneNumber: Long): ResponseEntity<User> {
+        val user = userService.getUserByPhoneNumber(phoneNumber)
+        return ResponseEntity.ok(user)
     }
 }
+
+data class AuthenticationRequest(val email: String, val password: String)

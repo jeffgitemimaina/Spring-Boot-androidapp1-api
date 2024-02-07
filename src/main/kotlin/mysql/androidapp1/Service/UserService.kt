@@ -1,64 +1,86 @@
 package mysql.androidapp1.Service
 
-
 import mysql.androidapp1.Entities.User
 import mysql.androidapp1.Exceptions.UserNotFound
 import mysql.androidapp1.Repository.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
+import java.security.SecureRandom
+import java.util.*
+import javax.crypto.spec.SecretKeySpec
+import javax.crypto.Cipher
+import javax.crypto.spec.IvParameterSpec
+
+
 
 @Service
 class UserService @Autowired constructor(
-        private val userRepository: UserRepository
+    private val userRepository: UserRepository
 ) {
+
+
+    private val secretKey = generateSecretKey()
+    private val ivParameterSpec = generateIV()
+
+    private fun generateSecretKey(): SecretKeySpec {
+        val key = ByteArray(16) // 128 bits
+        SecureRandom().nextBytes(key)
+        return SecretKeySpec(key, "AES")
+    }
+
+    private fun generateIV(): IvParameterSpec {
+        val iv = ByteArray(16) // 128 bits
+        SecureRandom().nextBytes(iv)
+        return IvParameterSpec(iv)
+    }
+
+    fun encrypt(text: String): String {
+        val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivParameterSpec)
+        val encryptedBytes = cipher.doFinal(text.toByteArray())
+        return Base64.getEncoder().encodeToString(encryptedBytes)
+    }
+
     fun createUser(user: User): User {
+        val encryptedPassword = encrypt(user.password)
+        user.password = encryptedPassword
         return userRepository.save(user)
     }
-fun getAllUsers(): List<User>{
-        return userRepository.getAllUsers()
 
-}
-    fun getActiveUsers(status: Boolean): List<User> {
-        val activeUsers = userRepository.getUserByStatus(status)
-
-        if (activeUsers.isNotEmpty()) {
-            return activeUsers
-        } else {
-            // Handle the case where no active users were found (e.g., return an empty list or throw an exception)
-            return emptyList()
-        }
+    fun authenticate(email: String, password: String): Boolean {
+        val user = userRepository.findByEmail(email)
+        val encryptedPassword = encrypt(password)
+        return user != null && user.password == encryptedPassword
     }
 
 
-
-    fun updateUser(id: Long, newUser: User): User? {
-        if (userRepository.existsById(id)) {
-            newUser.id = id  // Set the ID of the new user
-            return userRepository.save(newUser)
-        } else {
-            throw UserNotFound("user doesnt exist")
-            // Handle the case when the user with the given ID doesn't exist
-            return null
-        }
-    }
-
-    fun getUser(firstName: String): List<User> {
-        val foundUsers = userRepository.findUserByName(firstName)
-        if (foundUsers.isEmpty()) {
-            throw UserNotFound("No users found with the specified name.")
-        }
-        return foundUsers
-    }
-    fun addProfile(id: Long): UserNotFound {
-        val profile= userRepository.getProfileById(id)
-        if (profile != null) {
-                throw UserNotFound("no user has the id ")
+    fun updateUser(id: Long, updatedUser: User): User {
+        val existingUser = userRepository.findById(id)
+        return if (existingUser.isPresent) {
+            val userToUpdate = existingUser.get()
+            userToUpdate.apply {
+                firstName = updatedUser.firstName
+                secondName = updatedUser.secondName
+                email = updatedUser.email
+                pnumber = updatedUser.pnumber
+                password = updatedUser.password
             }
-        return UserNotFound("no user goes by that name")
+            userRepository.save(userToUpdate)
+        } else {
+            throw UserNotFound("User with id $id not found")
+        }
     }
 
+    fun deleteUser(id: Long) {
+        userRepository.deleteById(id)
+    }
 
+    fun getUserByEmail(email: String): User {
+        return userRepository.findByEmail(email) ?: throw UserNotFound("User with email $email not found")
+    }
 
-
-
+    fun getUserByPhoneNumber(phoneNumber: Long): User {
+        return userRepository.findByPnumber(phoneNumber) ?: throw UserNotFound("User with phone number $phoneNumber not found")
+    }
 }
